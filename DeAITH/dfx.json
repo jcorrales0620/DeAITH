@@ -1,0 +1,35 @@
+{
+  "canisters": {
+    "UserData": {
+      "main": "src/DeAITH_backend/main.mo",
+      "type": "motoko"
+    },
+    "RewardToken": {
+      "main": "src/DeAITH_backend/RewardToken.mo",
+      "type": "motoko"
+    },
+    "TrainingManager": {
+      "main": "src/DeAITH_backend/TrainingManager.mo",
+      "type": "motoko"
+    },
+    "DeAITH_frontend": {
+      "dependencies": [
+        "UserData",
+        "RewardToken",
+        "TrainingManager"
+      ],
+      "source": [
+        "src/DeAITH_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "DeAITH_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "version": 1
+}
