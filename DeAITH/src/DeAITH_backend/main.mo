@@ -40,7 +40,7 @@ actor UserData {
         let caller = msg.caller;
         
         switch (userProfiles.get(caller)) {
-            case (?profile) { #err("Profile already exists") };
+            case (?_profile) { #err("Profile already exists") };
             case null {
                 let newProfile : UserProfile = {
                     principal = caller;
@@ -158,7 +158,7 @@ actor UserData {
     };
     
     // Update user rewards (called by TrainingManager after training)
-    public shared(msg) func updateUserRewards(user: Principal, rewardAmount: Nat) : async Result.Result<Text, Text> {
+    public shared(_msg) func updateUserRewards(user: Principal, rewardAmount: Nat) : async Result.Result<Text, Text> {
         switch (userProfiles.get(user)) {
             case (?profile) {
                 let updatedProfile : UserProfile = {

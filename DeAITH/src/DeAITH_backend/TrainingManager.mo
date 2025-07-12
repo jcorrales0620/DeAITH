@@ -11,16 +11,16 @@ import Timer "mo:base/Timer";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 
-// Define interfaces for other canisters
-actor interface UserData {
-  getContributorList: query () -> async [Principal];
-};
-
-actor interface RewardToken {
-  mint: (Principal, Nat) -> async (); // Simplified return type
-};
-
 actor TrainingManager {
+    // Define interfaces for other canisters
+    type UserData = actor {
+      getContributorList: query () -> async [Principal];
+    };
+
+    type RewardToken = actor {
+      mint: (Principal, Nat) -> async (); // Simplified return type
+    };
+
     // --- STATE ---
     private stable var owner : Principal = Principal.fromText("aaaaa-aa");
     private var userDataCanister : UserData = actor("aaaaa-aa");
