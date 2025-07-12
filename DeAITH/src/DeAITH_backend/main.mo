@@ -54,13 +54,26 @@ actor UserData {
         }
     };
     
-    // Store encrypted health data
-    public shared(msg) func storeHealthData(encryptedData: Text, dataType: Text) : async Result.Result<Text, Text> {
+    // Store encrypted health data with automatic profile creation
+    public shared(msg) func storeHealthData(encryptedData: Text, dataType: Text) : async Result.Result<UserProfile, Text> {
         let owner = msg.caller;
         
-        // Ensure user has a profile
+        // Check and create profile if it doesn't exist (Upsert)
         switch (userProfiles.get(owner)) {
-            case null { return #err("Please initialize your profile first") };
+            case null {
+                let newProfile : UserProfile = {
+                    principal = owner;
+                    dataCount = 0;
+                    totalRewards = 0;
+                    joinedAt = Time.now();
+                };
+                userProfiles.put(owner, newProfile);
+            };
+            case (?_) {}; // Profile already exists
+        };
+        
+        // Get the profile (now guaranteed to exist)
+        switch (userProfiles.get(owner)) {
             case (?profile) {
                 dataCounter += 1;
                 let dataId = "DATA-" # Nat.toText(dataCounter);
@@ -95,7 +108,12 @@ actor UserData {
                 };
                 userProfiles.put(owner, updatedProfile);
                 
-                #ok("Data stored with ID: " # dataId)
+                // RETURN THE UPDATED PROFILE, NOT JUST TEXT "OK"
+                #ok(updatedProfile)
+            };
+            case null { 
+                // This should never happen now
+                #err("Unexpected error: Profile creation failed")
             };
         }
     };
@@ -120,6 +138,20 @@ actor UserData {
     // Toggle data sharing for a specific data entry
     public shared(msg) func toggleDataSharing(dataId: Text) : async Result.Result<Bool, Text> {
         let caller = msg.caller;
+        
+        // Auto-create profile if needed
+        switch (userProfiles.get(caller)) {
+            case null {
+                let newProfile : UserProfile = {
+                    principal = caller;
+                    dataCount = 0;
+                    totalRewards = 0;
+                    joinedAt = Time.now();
+                };
+                userProfiles.put(caller, newProfile);
+            };
+            case (?_) {}; // Profile already exists
+        };
         
         switch (userData.get(dataId)) {
             case (?data) {
@@ -159,6 +191,20 @@ actor UserData {
     
     // Update user rewards (called by TrainingManager after training)
     public shared(_msg) func updateUserRewards(user: Principal, rewardAmount: Nat) : async Result.Result<Text, Text> {
+        // Auto-create profile if needed
+        switch (userProfiles.get(user)) {
+            case null {
+                let newProfile : UserProfile = {
+                    principal = user;
+                    dataCount = 0;
+                    totalRewards = 0;
+                    joinedAt = Time.now();
+                };
+                userProfiles.put(user, newProfile);
+            };
+            case (?_) {}; // Profile already exists
+        };
+        
         switch (userProfiles.get(user)) {
             case (?profile) {
                 let updatedProfile : UserProfile = {
@@ -170,7 +216,10 @@ actor UserData {
                 userProfiles.put(user, updatedProfile);
                 #ok("Rewards updated")
             };
-            case null { #err("User profile not found") };
+            case null { 
+                // This should never happen now
+                #err("Unexpected error: Profile creation failed") 
+            };
         }
     };
     

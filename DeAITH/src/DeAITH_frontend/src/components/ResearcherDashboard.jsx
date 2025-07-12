@@ -4,8 +4,7 @@ function ResearcherDashboard({ principal, onLogout, TrainingManager, UserData, R
   const [jobs, setJobs] = useState([]);
   const [jobName, setJobName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [uiState, setUiState] = useState({ status: 'idle', message: '' }); // 'idle', 'loading', 'success', 'error'
 
   useEffect(() => {
     loadJobs();
@@ -22,26 +21,26 @@ function ResearcherDashboard({ principal, onLogout, TrainingManager, UserData, R
 
   async function handleSubmitJob() {
     if (!jobName.trim()) {
-      setMessage('Please enter a job name');
+      setUiState({ status: 'error', message: 'Please enter a job name' });
       return;
     }
 
-    setLoading(true);
-    setMessage(`Submitting job "${jobName}" to the network...`);
+    setUiState({ status: 'loading', message: `Submitting job "${jobName}" to the network...` });
 
     try {
       // Using the new submitTrainingJob function that includes timer
       await TrainingManager.submitTrainingJob(jobName);
-      setMessage(`Job "${jobName}" successfully submitted! Training will start in 30 seconds and rewards will be distributed automatically.`);
+      setUiState({ 
+        status: 'success', 
+        message: `Job "${jobName}" successfully submitted! Training will start in 30 seconds and rewards will be distributed automatically.` 
+      });
       setJobName('');
       setJobDescription('');
       
       // Reload jobs after a delay to show the new job
       setTimeout(() => loadJobs(), 2000);
     } catch (error) {
-      setMessage('Error submitting job: ' + error.message);
-    } finally {
-      setLoading(false);
+      setUiState({ status: 'error', message: 'Error: ' + error.message });
     }
   }
 
@@ -111,12 +110,16 @@ function ResearcherDashboard({ principal, onLogout, TrainingManager, UserData, R
           </div>
           <button 
             onClick={handleSubmitJob} 
-            disabled={loading}
+            disabled={uiState.status === 'loading'}
             className="submit-button"
           >
-            {loading ? 'Submitting...' : 'Submit Job'}
+            {uiState.status === 'loading' ? 'Submitting...' : 'Submit Job'}
           </button>
-          {message && <p className={`message ${message.includes('Error') ? 'error' : 'success'}`}>{message}</p>}
+          {uiState.message && (
+            <p className={`message ${uiState.status === 'error' ? 'error' : uiState.status === 'success' ? 'success' : ''}`}>
+              {uiState.message}
+            </p>
+          )}
         </div>
 
         <div className="jobs-history">

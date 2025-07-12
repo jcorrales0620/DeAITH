@@ -12,13 +12,19 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 
 actor TrainingManager {
+    // Define error type for RewardToken
+    type TokenError = {
+        #InsufficientBalance;
+        #Unauthorized;
+    };
+    
     // Define interfaces for other canisters
     type UserData = actor {
       getContributorList: query () -> async [Principal];
     };
 
     type RewardToken = actor {
-      mint: (Principal, Nat) -> async (); // Simplified return type
+      mint: (Principal, Nat) -> async Result.Result<Nat, TokenError>;
     };
 
     // --- STATE ---
@@ -107,7 +113,7 @@ actor TrainingManager {
     };
     
     // Update job status (in production, this would be called by the training process)
-    public shared(msg) func updateJobStatus(jobId: Text, status: JobStatus) : async Result.Result<Text, Text> {
+    public shared(_msg) func updateJobStatus(jobId: Text, status: JobStatus) : async Result.Result<Text, Text> {
         switch (jobs.get(jobId)) {
             case (?job) {
                 let updatedJob : TrainingJob = {
@@ -131,7 +137,7 @@ actor TrainingManager {
     };
     
     // Simulate running a training job (for demo purposes)
-    public shared(msg) func simulateTraining(jobId: Text, contributors: [Principal]) : async Result.Result<Text, Text> {
+    public shared(_msg) func simulateTraining(jobId: Text, contributors: [Principal]) : async Result.Result<Text, Text> {
         switch (jobs.get(jobId)) {
             case (?job) {
                 // Update status to Running
@@ -216,7 +222,7 @@ actor TrainingManager {
         };
         
         // Set timer to run onTimer after 30 seconds
-        let timerId = Timer.setTimer(#seconds 30, func() : async () {
+        let _timerId = Timer.setTimer<system>(#seconds 30, func() : async () {
             await onTimer(jobId);
         });
     };
@@ -227,7 +233,7 @@ actor TrainingManager {
         await distributeRewards(jobId);
     };
     
-    // Private function to distribute rewards
+    // Private function to distribute rewards with enhanced error handling
     private func distributeRewards(jobId: Text) : async () {
         try {
             // 1. Get list of contributors from UserData canister
@@ -235,13 +241,29 @@ actor TrainingManager {
             Debug.print("Found " # Nat.toText(contributors.size()) # " contributors.");
             
             // 2. Loop and mint tokens for each contributor
-            let rewardAmount : Nat = 10; // Each job gives 10 DTH
+            let rewardAmount : Nat = 10_00000000; // 10 DTH with 8 decimals
+            var failedMints : [Principal] = [];
+            
             for (contributor in contributors.vals()) {
-                Debug.print("Minting " # Nat.toText(rewardAmount) # " DTH for " # Principal.toText(contributor));
-                await rewardTokenCanister.mint(contributor, rewardAmount);
+                try {
+                    Debug.print("Minting " # Nat.toText(rewardAmount) # " DTH for " # Principal.toText(contributor));
+                    let mintResult = await rewardTokenCanister.mint(contributor, rewardAmount);
+                    switch (mintResult) {
+                        case (#ok(_)) {
+                            Debug.print("Successfully minted for " # Principal.toText(contributor));
+                        };
+                        case (#err(e)) {
+                            Debug.print("Failed to mint for " # Principal.toText(contributor) # ": " # debug_show(e));
+                            failedMints := Array.append(failedMints, [contributor]);
+                        };
+                    };
+                } catch (e) {
+                    Debug.print("Failed to mint for " # Principal.toText(contributor) # ": " # Error.message(e));
+                    failedMints := Array.append(failedMints, [contributor]);
+                };
             };
             
-            // 3. Update job status to completed
+            // 3. Update job status to completed (even if some mints failed)
             switch (jobs.get(jobId)) {
                 case (?job) {
                     let completedJob : TrainingJob = {
@@ -255,6 +277,11 @@ actor TrainingManager {
                         dataContributors = contributors;
                     };
                     jobs.put(jobId, completedJob);
+                    
+                    // Log failed mints if any
+                    if (failedMints.size() > 0) {
+                        Debug.print("Job " # jobId # " completed with " # Nat.toText(failedMints.size()) # " failed reward distributions");
+                    };
                 };
                 case null {};
             };

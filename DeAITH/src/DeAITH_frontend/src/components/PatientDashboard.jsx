@@ -8,8 +8,7 @@ function PatientDashboard({ principal, onLogout, UserData, RewardToken }) {
   const [dataCount, setDataCount] = useState(0);
   const [healthData, setHealthData] = useState('');
   const [dataType, setDataType] = useState('smartwatch');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [uiState, setUiState] = useState({ status: 'idle', message: '' }); // 'idle', 'loading', 'success', 'error'
 
   useEffect(() => {
     loadUserData();
@@ -42,32 +41,34 @@ function PatientDashboard({ principal, onLogout, UserData, RewardToken }) {
 
   async function handleSubmitData() {
     if (!healthData.trim()) {
-      setMessage('Please enter some health data');
+      setUiState({ status: 'error', message: 'Please enter some health data' });
       return;
     }
 
-    setLoading(true);
-    setMessage('');
+    setUiState({ status: 'loading', message: 'Mengenkripsi & Menyimpan...' });
 
     try {
       // Encrypt data on client side (in production, use a more secure method)
-      const encryptionKey = 'DeAITH-demo-key'; // In production, use user's unique key
+      const encryptionKey = 'DeAITH-demo-key-' + principal.toString();
       const encryptedData = CryptoJS.AES.encrypt(healthData, encryptionKey).toString();
 
-      // Store encrypted data
+      // Call the updated function
       const result = await UserData.storeHealthData(encryptedData, dataType);
       
+      // 'result.ok' now contains the UserProfile object
       if ('ok' in result) {
-        setMessage('Data successfully stored and encrypted!');
+        setUiState({ status: 'success', message: 'Data berhasil disimpan!' });
         setHealthData('');
-        loadUserData(); // Reload to update counts
+        
+        // DIRECTLY UPDATE STATE FROM THE RECEIVED RESULT, NO NEED TO CALL loadUserData() AGAIN
+        const updatedProfile = result.ok;
+        setProfile(updatedProfile);
+        setDataCount(Number(updatedProfile.dataCount));
       } else {
-        setMessage('Error: ' + result.err);
+        setUiState({ status: 'error', message: 'Error: ' + result.err });
       }
     } catch (error) {
-      setMessage('Error storing data: ' + error.message);
-    } finally {
-      setLoading(false);
+      setUiState({ status: 'error', message: 'Error: ' + error.message });
     }
   }
 
@@ -120,12 +121,16 @@ function PatientDashboard({ principal, onLogout, UserData, RewardToken }) {
           </div>
           <button 
             onClick={handleSubmitData} 
-            disabled={loading}
+            disabled={uiState.status === 'loading'}
             className="submit-button"
           >
-            {loading ? 'Mengenkripsi & Menyimpan...' : 'Enkripsi & Simpan On-Chain'}
+            {uiState.status === 'loading' ? 'Mengenkripsi & Menyimpan...' : 'Enkripsi & Simpan On-Chain'}
           </button>
-          {message && <p className={`message ${message.includes('Error') ? 'error' : 'success'}`}>{message}</p>}
+          {uiState.message && (
+            <p className={`message ${uiState.status === 'error' ? 'error' : uiState.status === 'success' ? 'success' : ''}`}>
+              {uiState.message}
+            </p>
+          )}
         </div>
 
         <div className="privacy-section">
