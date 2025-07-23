@@ -45,14 +45,6 @@ function App() {
         const identity = authClient.getIdentity();
         setIdentity(identity);
         setPrincipal(identity.getPrincipal().toString());
-        
-        // Initialize user profile
-        try {
-          const result = await UserData.initProfile();
-          console.log("Profile initialized:", result);
-        } catch (error) {
-          console.log("Profile might already exist:", error);
-        }
       },
     });
   }

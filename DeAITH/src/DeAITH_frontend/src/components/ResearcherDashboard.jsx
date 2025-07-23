@@ -29,37 +29,22 @@ function ResearcherDashboard({ principal, onLogout, TrainingManager, UserData, R
 
     try {
       // Using the new submitTrainingJob function that includes timer
-      await TrainingManager.submitTrainingJob(jobName);
-      setUiState({ 
-        status: 'success', 
-        message: `Job "${jobName}" successfully submitted! Training will start in 30 seconds and rewards will be distributed automatically.` 
-      });
-      setJobName('');
-      setJobDescription('');
-      
-      // Reload jobs after a delay to show the new job
-      setTimeout(() => loadJobs(), 2000);
-    } catch (error) {
-      setUiState({ status: 'error', message: 'Error: ' + error.message });
-    }
-  }
-
-  async function simulateTraining(jobId) {
-    try {
-      // Get available data contributors
-      const availableData = await UserData.getAvailableDataForTraining();
-      const contributors = availableData.map(([owner, _]) => owner);
-      
-      if (contributors.length > 0) {
-        // Simulate training with contributors
-        await TrainingManager.simulateTraining(jobId, contributors.slice(0, 5)); // Use up to 5 contributors
+      const result = await TrainingManager.submitTrainingJob(jobName);
+      if ('ok' in result) {
+        setUiState({
+          status: 'success',
+          message: `Job "${jobName}" successfully submitted! Training will start in 30 seconds and rewards will be distributed automatically.`
+        });
+        setJobName('');
+        setJobDescription('');
         
-        // In a real implementation, this would trigger token rewards
-        // For now, we'll just reload the jobs to show updated status
-        loadJobs();
+        // Reload jobs after a delay to show the new job
+        setTimeout(() => loadJobs(), 2000);
+      } else {
+        setUiState({ status: 'error', message: 'Error: ' + result.err });
       }
     } catch (error) {
-      console.error("Error simulating training:", error);
+      setUiState({ status: 'error', message: 'Error: ' + error.message });
     }
   }
 

@@ -66,17 +66,30 @@ If you are hosting frontend code somewhere without using DFX, you may need to ma
 
 Our revenue model is centered around the DTH token and the DeAITH platform, creating a sustainable business model that benefits all stakeholders.
 
-### For Researchers:
-- **Data Access Fees**: Researchers pay fees in DTH tokens to access anonymized health data for their studies. This creates a direct revenue stream and incentivizes data sharing by patients.
-- **Platform Subscription**: A subscription model for premium features, such as advanced AI-powered data analysis tools, custom data filtering, and priority access to new datasets.
+### DTH Token Utility
+The DTH token is the lifeblood of the DeAITH ecosystem, with a variety of use cases designed to create a vibrant and self-sustaining economy:
 
-### For Patients:
-- **Data Monetization**: Patients earn DTH tokens for contributing their health data, creating a direct financial incentive to participate in the ecosystem.
-- **Premium Health Insights**: Future features could include personalized health insights and recommendations based on their data, available through a premium subscription.
+- **Data Access**: Researchers must use DTH tokens to pay for access to the datasets they need for their work. This is the primary driver of token demand.
+- **Staking for Governance**: Token holders can stake their DTH to participate in decentralized governance, voting on proposals related to platform development, data access policies, and the allocation of ecosystem funds.
+- **Reward Distribution**: Patients are rewarded with DTH tokens for contributing their data, creating a direct incentive for participation and data liquidity.
+- **Premium Features**: Access to premium features, such as advanced AI-driven analytics, will require payment in DTH tokens.
+- **Marketplace**: A future marketplace for health-related services and products will use DTH as the primary currency.
 
-### For a Sustainable Ecosystem:
-- **Token Buy-Back and Burn**: A portion of the platform's revenue will be used to buy back and burn DTH tokens, reducing the total supply and increasing the value of the token over time.
-- **Staking and Governance**: DTH token holders can stake their tokens to participate in the platform's governance, influencing decisions about data access policies, feature development, and revenue distribution.
+### Revenue Streams
+The DeAITH platform will generate revenue through a variety of streams, ensuring its long-term sustainability:
+
+- **Data Access Fees**: A percentage of the fees paid by researchers for data access will be allocated to the platform's treasury.
+- **Subscription Services**: Recurring revenue will be generated from subscription plans for researchers and other data consumers, offering tiered access to data and platform features.
+- **Transaction Fees**: A small fee will be charged on all transactions within the DeAITH ecosystem, including token transfers and marketplace purchases.
+- **AI Model Licensing**: As the platform develops its own AI models, these will be licensed to pharmaceutical companies and other healthcare organizations, creating a valuable new revenue stream.
+
+### Value Creation and Sustainability
+The DeAITH revenue model is designed to create a virtuous cycle of value creation and sustainability:
+
+- **Increased Data Contribution**: By rewarding patients for their data, we incentivize the growth of our data pool, making the platform more valuable to researchers.
+- **Increased Demand for DTH**: As more researchers use the platform, the demand for DTH tokens will increase, driving up their value.
+- **Ecosystem Growth**: A portion of the platform's revenue will be reinvested into the ecosystem, funding further development, research grants, and community initiatives.
+- **Token Buy-Back and Burn**: To create deflationary pressure and increase the value of the DTH token, a portion of the platform's profits will be used to buy back and burn tokens from the open market.
 
 ## User Flow Diagram
 

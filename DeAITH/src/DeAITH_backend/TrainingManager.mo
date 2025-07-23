@@ -42,6 +42,7 @@ actor TrainingManager {
         createdAt: Int;
         completedAt: ?Int;
         dataContributors: [Principal];
+        failedMints: [Principal];
     };
     
     public type JobStatus = {
@@ -83,6 +84,7 @@ actor TrainingManager {
             createdAt = Time.now();
             completedAt = null;
             dataContributors = [];
+            failedMints = [];
         };
         
         jobs.put(jobId, newJob);
@@ -128,6 +130,7 @@ actor TrainingManager {
                         case (_) { job.completedAt };
                     };
                     dataContributors = job.dataContributors;
+                    failedMints = job.failedMints;
                 };
                 jobs.put(jobId, updatedJob);
                 #ok("Job status updated")
@@ -150,6 +153,7 @@ actor TrainingManager {
                     createdAt = job.createdAt;
                     completedAt = null;
                     dataContributors = contributors;
+                    failedMints = [];
                 };
                 jobs.put(jobId, runningJob);
                 
@@ -164,6 +168,7 @@ actor TrainingManager {
                     createdAt = job.createdAt;
                     completedAt = ?Time.now();
                     dataContributors = contributors;
+                    failedMints = [];
                 };
                 jobs.put(jobId, completedJob);
                 
@@ -189,7 +194,11 @@ actor TrainingManager {
     // --- NEW PHASE 2 FUNCTIONS ---
     
     // Submit training job with timer (Phase 2 implementation)
-    public shared(msg) func submitTrainingJob(jobName: Text) : async () {
+    public shared(msg) func submitTrainingJob(jobName: Text) : async Result.Result<Text, Text> {
+        if (Text.size(jobName) == 0) {
+            return #err("Job name cannot be empty");
+        };
+
         // In real app, there would be validation and payment logic here
         Debug.print("Job '" # jobName # "' received. Starting 30 second timer...");
         
@@ -207,6 +216,7 @@ actor TrainingManager {
             createdAt = Time.now();
             completedAt = null;
             dataContributors = [];
+            failedMints = [];
         };
         
         jobs.put(jobId, newJob);
@@ -225,6 +235,8 @@ actor TrainingManager {
         let _timerId = Timer.setTimer<system>(#seconds 30, func() : async () {
             await onTimer(jobId);
         });
+
+        #ok("Job '" # jobName # "' received and timer set.");
     };
     
     // Private function called when timer expires
@@ -275,6 +287,7 @@ actor TrainingManager {
                         createdAt = job.createdAt;
                         completedAt = ?Time.now();
                         dataContributors = contributors;
+                        failedMints = failedMints;
                     };
                     jobs.put(jobId, completedJob);
                     
@@ -302,6 +315,7 @@ actor TrainingManager {
                         createdAt = job.createdAt;
                         completedAt = ?Time.now();
                         dataContributors = [];
+                        failedMints = [];
                     };
                     jobs.put(jobId, failedJob);
                 };
