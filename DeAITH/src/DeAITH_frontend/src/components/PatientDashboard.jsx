@@ -60,7 +60,7 @@ function PatientDashboard({ principal, onLogout, UserData, RewardToken }) {
         setUiState({ status: 'success', message: 'Data berhasil disimpan!' });
         setHealthData('');
         
-        // DIRECTLY UPDATE STATE FROM THE RECEIVED RESULT, NO NEED TO CALL loadUserData() AGAIN
+        // DIRECTLY UPDATE STATE FROM THE RECEIVED RESULT
         const updatedProfile = result.ok;
         setProfile(updatedProfile);
         setDataCount(Number(updatedProfile.dataCount));
